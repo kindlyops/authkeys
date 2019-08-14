@@ -31,6 +31,7 @@ type AuthkeysConfig struct {
 	LDAPPort      int
 	RootCAFile    string
 	UserAttribute string
+	UserPostfix   string
 	BindDN        string
 	BindPW        string
 }
@@ -81,6 +82,7 @@ func main() {
 		log.Fatalf("Not enough parameters specified (or too many): just need LDAP username.")
 	} else {
 		username = os.Args[1]
+		username += config.UserPostfix
 	}
 
 	if *minPtr != "" {
