@@ -179,6 +179,24 @@ func main() {
 		var Users []User
 		for _, entry := range sr.Entries {
 			rawMemberOf := entry.GetAttributeValues("memberOf")
+			// If it is a minimal ldap integration search for memberOf for each user.
+			if *minPtr != "" {
+				userSearchRequest := ldap.NewSearchRequest(
+					config.BaseDN,
+					ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
+					fmt.Sprintf("(%s=%s)", config.UserAttribute, entry.GetAttributeValues(config.UserAttribute)[0]),
+					[]string{"memberOf"},
+					nil,
+				)
+				userSr, err := l.Search(userSearchRequest)
+				if err != nil {
+					log.Fatal(err)
+				}
+				for _, userEntry := range userSr.Entries {
+					rawMemberOf = userEntry.GetAttributeValues("memberOf")
+				}
+			}
+
 			var memberOf []string
 			var username string
 			for group := range rawMemberOf {
