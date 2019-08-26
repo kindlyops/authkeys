@@ -25,6 +25,7 @@ import (
 
 type AuthkeysConfig struct {
 	BaseDN        string
+	GroupObject   string
 	DialTimeout   int
 	KeyAttribute  string
 	LDAPServer    string
@@ -39,8 +40,10 @@ type AuthkeysConfig struct {
 type User struct {
 	Uid           string   `json:"id"`
 	UidNumber     string   `json:"uid"`
+	GidNumber     string   `json:"gid"`
 	MemberOf      []string `json:"groups"`
 	HomeDirectory string   `json:"home"`
+	Shell         string   `json:"shell"`
 }
 
 func NewConfig(fname string) AuthkeysConfig {
@@ -86,9 +89,9 @@ func main() {
 	}
 
 	if *minPtr != "" {
-		attributes = []string{"uid", "uidNumber", "homeDirectory"}
+		attributes = []string{"uid", "uidNumber", "gidNumber", "homeDirectory", "loginShell"}
 	} else {
-		attributes = []string{"uid", "uidNumber", "memberOf", "homeDirectory"}
+		attributes = []string{"uid", "uidNumber", "gidNumber", "memberOf", "homeDirectory", "loginShell"}
 	}
 	// Begin initial LDAP TCP connection. The LDAP library does have a Dial
 	// function that does most of what we need -- but its default timeout is 60
@@ -147,7 +150,7 @@ func main() {
 		searchRequest = ldap.NewSearchRequest(
 			config.BaseDN,
 			ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, 0, false,
-			fmt.Sprintf("(&(objectClass=inetOrgPerson)(memberOf=cn=%s,%s))", *groupPtr, config.BaseDN),
+			fmt.Sprintf("(&(objectClass=inetOrgPerson)(memberOf=cn=%s,ou=%s,%s))", *groupPtr, config.GroupObject, config.BaseDN),
 			attributes, // attributes to retrieve
 			nil,
 		)
@@ -218,12 +221,15 @@ func main() {
 			}
 
 			homeDir := string(entry.GetAttributeValue("homeDirectory"))
+			loginShell := string(entry.GetAttributeValue("loginShell"))
 
 			Users = append(Users, User{
 				Uid:           username,
 				UidNumber:     string(entry.GetAttributeValue("uidNumber")),
+				GidNumber:     string(entry.GetAttributeValue("gidNumber")),
 				MemberOf:      memberOf,
 				HomeDirectory: homeDir,
+				Shell:         loginShell,
 			})
 		}
 		myUsers, err := json.Marshal(Users)
