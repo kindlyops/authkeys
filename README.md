@@ -5,7 +5,8 @@
 on stdout.
 
 To learn more about our use of `authkeys` see our blog post.
-* [Authkeys: Key-Based SSH Authentication with Go](https://blog.threatstack.com/authkeys-making-key-based-ldap-authentication-faster)
+
+-   [Authkeys: Key-Based SSH Authentication with Go](https://blog.threatstack.com/authkeys-making-key-based-ldap-authentication-faster)
 
 ## Pre-Requisites
 
@@ -25,10 +26,8 @@ and make sure the binary is chmod'ed to `0555`.
 
 Then, add to your `sshd_config`:
 
-```
-AuthorizedKeysCommandUser nobody
-AuthorizedKeysCommand /usr/sbin/authkeys
-```
+    AuthorizedKeysCommandUser nobody
+    AuthorizedKeysCommand /usr/sbin/authkeys
 
 Now when you log in, OpenSSH will run (in this example) `/usr/sbin/authkeys`
 with the username as the first argument. Authkeys will return the keys from
@@ -46,7 +45,7 @@ Some LDAP installations require you to bind before searching. For example, Jumpc
 operates a user directory-as-a-service and allows users to self-service their
 SSH keys. You will need to provide a BindDN and BindPW in order to connect to
 the JumpCloud LDAP directory. See the documentation in this article for details:
-https://jumpcloud.com/engineering-blog/how-to-connect-your-application-to-ldap/
+<https://jumpcloud.com/engineering-blog/how-to-connect-your-application-to-ldap/>
 
 ## Configuration
 
@@ -54,36 +53,38 @@ Authkeys is configured using a JSON file. By default, it'll look in
 `/etc/authkeys.json` but you can override this with the `AUTHKEYS_CONFIG`
 environment variable for testing.
 
-```
-{
-  "BaseDN": "",
-  "DialTimeout": 5,
-  "KeyAttribute": "",
-  "LDAPServer": "",
-  "LDAPPort": 389,
-  "RootCAFile": "",
-  "UserAttribute": "",
-  "BindDN": "",
-  "BindPW": ""
-}
-```
+    {
+      "BaseDN": "",
+      "GroupObject": ""
+      "DialTimeout": 5,
+      "KeyAttribute": "",
+      "LDAPServer": "",
+      "LDAPPort": 389,
+      "RootCAFile": "",
+      "UserAttribute": "",
+      "UserPostfix": "",
+      "BindDN": "",
+      "BindPW": ""
+    }
 
 | Variable        | Type   | Purpose                                              | Possible Value                       |
-|-----------------|--------|------------------------------------------------------|--------------------------------------|
+| --------------- | ------ | ---------------------------------------------------- | ------------------------------------ |
 | `BaseDN`        | String | Base DN for your LDAP server                         | `dc=spiffy,dc=io`                    |
+| `GroupObject`   | String | The ou to search for groups                          | `ou=Groups`                          |
 | `DialTimeout`   | Int    | A connection timeout if LDAP isnt reachable [Note 1] | `5`                                  |
 | `KeyAttribute`  | String | LDAP Attribute for the SSH key                       | `sshPublicKey`                       |
 | `LDAPServer`    | String | Hostname of your LDAP server                         | `ldap.spiffy.io`                     |
 | `LDAPPort`      | Int    | Port to talk to LDAP on                              | `389`                                |
 | `RootCAFile`    | String | A path to a file full of trusted root CAs [Note 2]   | `/etc/ssl/certs/ca-certificates.crt` |
 | `UserAttribute` | String | LDAP Attribute for a User                            | `uid`                                |
+| `UserPostfix`   | String | Postfix for a user such as @example.local            | `@example.local`                     |
 | `BindDN`        | String | Bind DN for your LDAP server (LDAP service account)  | `uid=U,ou=Users,o=123,dc=jc,dc=com`  |
 | `BindPW`        | String | Password for the LDAP service account                | `password`                           |
 
 ### Notes
 
-1. Defaults to 5 seconds
-1. If blank, Go will attempt to use system trust roots.
+1.  Defaults to 5 seconds
+2.  If blank, Go will attempt to use system trust roots.
 
 ## Usage
 
@@ -91,6 +92,7 @@ environment variable for testing.
 as that.
 
 ## Changelog
+
 If you're wondering why this started at version 2.0.0, it's because we've been
 using this tool internally for a while, and we cleaned it up for external
 consumption :)
@@ -109,11 +111,11 @@ Jumpcloud.com that require authentication.
 
 ## Contribution
 
-1. Fork
-1. Create a feature branch
-1. Commit your changes
-1. Rebase your local changes against the master branch
-1. Create a new Pull Request
+1.  Fork
+2.  Create a feature branch
+3.  Commit your changes
+4.  Rebase your local changes against the master branch
+5.  Create a new Pull Request
 
 ## Author
 
